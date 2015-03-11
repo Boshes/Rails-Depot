@@ -5,32 +5,56 @@ class OrdersController < ApplicationController
   # GET /orders.json
   def index
     @orders = Order.all
+    respond_to do |format|
+      format.html #index.html.erb
+      format.json {render json: @orders}
+    end
   end
 
   # GET /orders/1
   # GET /orders/1.json
   def show
+    @order = Order.find(params[:id])
+    respond_to do |format|
+      format.html #show.html.erb
+      format.json {render json: @order}
+    end
   end
 
   # GET /orders/new
   def new
+    @cart = current_cart
+    if @cart.line_items.empty?
+      redirect_to store_url, notice: 'Your cart is empty'
+      return
+    end
     @order = Order.new
+    respond_to do |format|
+      format.html #new.html.erb
+      format.json {render json: @order}
+    end
   end
 
   # GET /orders/1/edit
   def edit
+    @order = Order.find(params[:id])
   end
 
   # POST /orders
   # POST /orders.json
   def create
     @order = Order.new(order_params)
+    @order.add_line_items_from_cart(current_cart)
 
     respond_to do |format|
       if @order.save
+        Cart.destroy(session[:cart_id])
+        session[:cart_id] = nil
+        format.html { redirect_to store_url, notice: "Thank you for your order."}
         format.html { redirect_to @order, notice: 'Order was successfully created.' }
         format.json { render :show, status: :created, location: @order }
       else
+        @cart = current_cart
         format.html { render :new }
         format.json { render json: @order.errors, status: :unprocessable_entity }
       end
@@ -40,10 +64,11 @@ class OrdersController < ApplicationController
   # PATCH/PUT /orders/1
   # PATCH/PUT /orders/1.json
   def update
+    @order = Order.find(params[:id])
     respond_to do |format|
-      if @order.update(order_params)
+      if @order.update(params[:order])
         format.html { redirect_to @order, notice: 'Order was successfully updated.' }
-        format.json { render :show, status: :ok, location: @order }
+        format.json { head :no_content }
       else
         format.html { render :edit }
         format.json { render json: @order.errors, status: :unprocessable_entity }
@@ -54,6 +79,7 @@ class OrdersController < ApplicationController
   # DELETE /orders/1
   # DELETE /orders/1.json
   def destroy
+    @order = Order.find(params[:id])
     @order.destroy
     respond_to do |format|
       format.html { redirect_to orders_url, notice: 'Order was successfully destroyed.' }
