@@ -4,8 +4,8 @@ class UsersControllerTest < ActionController::TestCase
   setup do
     @input_attributes = {
         name: "sam",
-      password: "private",
-       password_confirmation: "private"
+        password: "private",
+        password_confirmation: "private"
     }
     @user = users(:one)
   end
@@ -21,11 +21,11 @@ class UsersControllerTest < ActionController::TestCase
     assert_response :success
   end
 
+  #...
   test "should create user" do
     assert_difference('User.count') do
       post :create, user: @input_attributes
     end
-
     assert_redirected_to users_path
   end
 
@@ -39,8 +39,9 @@ class UsersControllerTest < ActionController::TestCase
     assert_response :success
   end
 
+  #...
   test "should update user" do
-    put :update, id: @user, user: @input_attributes
+    put :update, id: @user.to_params, user: @input_attributes
     assert_redirected_to users_path
   end
 
@@ -48,7 +49,6 @@ class UsersControllerTest < ActionController::TestCase
     assert_difference('User.count', -1) do
       delete :destroy, id: @user
     end
-
     assert_redirected_to users_path
   end
 end
